@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface User {
   id: string;
@@ -28,7 +29,6 @@ export const useAuth = () => {
   return context;
 };
 
-// Mock data pour la démo
 const mockUsers = [
   {
     id: '1',
@@ -64,28 +64,35 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simuler la vérification de session
-    const savedUser = localStorage.getItem('ead_user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-    setLoading(false);
+    loadUser();
   }, []);
 
+  const loadUser = async () => {
+    try {
+      const savedUser = await AsyncStorage.getItem('ead_user');
+      if (savedUser) {
+        setUser(JSON.parse(savedUser));
+      }
+    } catch (error) {
+      console.error('Error loading user:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const login = async (email: string, password: string): Promise<boolean> => {
-    // Simulation de l'authentification
     const foundUser = mockUsers.find(u => u.email === email);
     if (foundUser && password.length > 0) {
       setUser(foundUser);
-      localStorage.setItem('ead_user', JSON.stringify(foundUser));
+      await AsyncStorage.setItem('ead_user', JSON.stringify(foundUser));
       return true;
     }
     return false;
   };
 
-  const logout = () => {
+  const logout = async () => {
     setUser(null);
-    localStorage.removeItem('ead_user');
+    await AsyncStorage.removeItem('ead_user');
   };
 
   return (
