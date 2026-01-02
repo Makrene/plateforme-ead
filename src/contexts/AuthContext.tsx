@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface User {
   id: string;
@@ -69,7 +68,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const loadUser = async () => {
     try {
-      const savedUser = await AsyncStorage.getItem('ead_user');
+      const savedUser = localStorage.getItem('ead_user');
       if (savedUser) {
         setUser(JSON.parse(savedUser));
       }
@@ -84,7 +83,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const foundUser = mockUsers.find(u => u.email === email);
     if (foundUser && password.length > 0) {
       setUser(foundUser);
-      await AsyncStorage.setItem('ead_user', JSON.stringify(foundUser));
+      localStorage.setItem('ead_user', JSON.stringify(foundUser));
       return true;
     }
     return false;
@@ -92,7 +91,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const logout = async () => {
     setUser(null);
-    await AsyncStorage.removeItem('ead_user');
+    localStorage.removeItem('ead_user');
   };
 
   return (
